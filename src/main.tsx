@@ -16,19 +16,14 @@ const root = createRoot(document.getElementById("root")!);
 root.render(
   <StrictMode>
     <ErrorBoundary>
+      {/* The site renders with or without backend wiring; the enquiry form
+          reports its own disconnected state when the Convex env vars are absent. */}
       {convexUrl ? (
         <ConvexProvider client={new ConvexReactClient(convexUrl)}>
           <BrowserRouter><App /></BrowserRouter>
         </ConvexProvider>
       ) : (
-        <main className="page">
-          <p className="eyebrow">Configuration needed</p>
-          <h1>Connect your Convex deployment</h1>
-          <p className="muted">
-            Set <code>VITE_CONVEX_URL</code> (and <code>VITE_SITE_ID</code>) in
-            your environment, then restart the development server.
-          </p>
-        </main>
+        <BrowserRouter><App /></BrowserRouter>
       )}
     </ErrorBoundary>
     {/* data-site-id keeps the tenant id present in the built bundle for deployment verification */}

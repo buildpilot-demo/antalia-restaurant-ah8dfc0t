@@ -196,7 +196,8 @@ h1 {
   border-radius: var(--radius-md);
   border: 1px solid var(--color-border);
   background: var(--color-accent);
-  color: #fff;
+  /* Dark ink on the accent fill keeps button labels above AA contrast. */
+  color: var(--color-background);
   text-decoration: none;
   font-weight: 600;
   font: inherit;
@@ -229,7 +230,7 @@ h1 {
   border-radius: var(--radius-md);
   border: 1px solid var(--color-border);
   background: var(--color-accent);
-  color: #fff;
+  color: var(--color-background);
   text-decoration: none;
   font-weight: 600;
   cursor: pointer;
@@ -322,14 +323,32 @@ h1 {
   display: block;
 }
 
+/* Legibility scrim over the frame sequence, so hero copy keeps WCAG AA
+   contrast against every frame in the sequence. */
+.hero-scrim {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(to top, color-mix(in srgb, var(--color-background) 92%, transparent) 0%, color-mix(in srgb, var(--color-background) 55%, transparent) 45%, transparent 75%),
+    radial-gradient(120% 90% at 50% 40%, transparent 40%, color-mix(in srgb, var(--color-background) 70%, transparent) 100%);
+  pointer-events: none;
+}
+
 .hero-chapter {
   position: absolute;
   inset-inline: 0;
-  bottom: 12%;
-  max-width: 640px;
-  padding-inline: var(--space-6);
-  transition: opacity 400ms ease;
+  bottom: 14%;
+  width: min(100%, 46rem);
+  padding-inline: clamp(var(--space-6), 6vw, 5rem);
   color: var(--color-text);
+  /* Crossfade only; visibility keeps faded-out chapters out of the tab order. */
+  visibility: hidden;
+  transition: opacity 500ms ease, visibility 0s linear 500ms;
+}
+
+.hero-chapter[data-visible="true"] {
+  visibility: visible;
+  transition: opacity 500ms ease, visibility 0s;
 }
 
 .hero-chapter[data-align="left"] {
@@ -341,9 +360,46 @@ h1 {
   text-align: right;
 }
 
+.hero-chapter h1,
+.hero-chapter h2 {
+  margin: 0 0 var(--space-4);
+  font-size: clamp(2rem, 5.2vw, 3.6rem);
+  line-height: 1.08;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+
+.hero-chapter .muted {
+  color: var(--color-text);
+  font-size: clamp(1rem, 1.4vw, 1.125rem);
+  max-width: 40rem;
+  margin: 0;
+}
+
+.hero-chapter[data-align="right"] .muted {
+  margin-inline-start: auto;
+}
+
+.hero-chapter__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin: var(--space-6) 0 0;
+}
+
+.hero-chapter[data-align="right"] .hero-chapter__actions {
+  justify-content: flex-end;
+}
+
+.hero-chapter__actions .btn {
+  margin: 0;
+}
+
 .hero-scroll-cue {
-  margin-top: var(--space-4);
-  font-size: 0.8rem;
+  margin-top: var(--space-6);
+  font-size: 0.75rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
   color: var(--color-muted);
 }
 
@@ -369,7 +425,11 @@ h1 {
 
 .hero-static .hero-chapter {
   position: static;
-  max-width: none;
+  width: auto;
+  padding-inline: 0;
+  visibility: visible;
+  opacity: 1;
+  transition: none;
 }
 
 /* --- Section 2: horizontal products/services rail ------------------------ */
@@ -389,51 +449,68 @@ h1 {
 
 .products-rail {
   display: flex;
-  gap: var(--space-8);
+  align-items: center;
+  gap: clamp(var(--space-6), 3vw, var(--space-12));
   will-change: transform;
-  padding-inline: var(--space-6);
+  padding-inline: clamp(var(--space-6), 6vw, 5rem);
 }
 
-.products-panel {
+.products-intro {
   flex: 0 0 auto;
-  width: min(60vw, 480px);
+  width: min(80vw, 26rem);
 }
 
-.products-panel--intro {
-  width: min(50vw, 400px);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
+.products-intro h2 {
+  margin: 0 0 var(--space-4);
+  font-size: clamp(1.75rem, 3.2vw, 2.5rem);
+  line-height: 1.12;
+  text-wrap: balance;
 }
 
-.products-panel img {
+/* Uniform square image cards: every product photo is cropped to the
+   configured aspect ratio regardless of its native dimensions. */
+.product-card {
+  flex: 0 0 auto;
+  width: min(78vw, 22rem);
+}
+
+.product-card__media {
   width: 100%;
-  aspect-ratio: 4 / 5;
-  object-fit: cover;
+  overflow: hidden;
   border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
   margin-bottom: var(--space-4);
 }
 
-@media (max-width: 768px) {
-  .products-panel {
-    width: 85vw;
-  }
+.product-card__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
 
-  .products-panel--intro {
-    width: 85vw;
-  }
+.product-card h3 {
+  margin: 0 0 var(--space-2);
+  font-size: 1.25rem;
+}
+
+.product-card .muted {
+  margin: 0;
+  font-size: 0.95rem;
 }
 
 .products-list {
   display: flex;
   flex-direction: column;
   gap: var(--space-8);
-  padding: var(--space-8) var(--space-6);
-  max-width: var(--container-width);
+  padding: var(--space-12) var(--space-6);
+  max-width: 34rem;
   margin-inline: auto;
 }
 
-.products-list .products-panel {
+.products-list .products-intro,
+.products-list .product-card {
   width: 100%;
 }
 
@@ -476,7 +553,8 @@ h1 {
 /* --- Section 3: enquiry -------------------------------------------------- */
 
 .enquiry-section {
-  padding-block-start: var(--space-12);
+  padding-block-start: calc(var(--space-12) * 1.5);
+  background: linear-gradient(to bottom, transparent, color-mix(in srgb, var(--color-surface) 60%, transparent));
   opacity: 0;
   transform: translateY(24px);
   transition: opacity 500ms ease, transform 500ms ease;
@@ -487,10 +565,25 @@ h1 {
   transform: translateY(0);
 }
 
+.enquiry-intro h2 {
+  font-size: clamp(1.75rem, 3.2vw, 2.5rem);
+  line-height: 1.12;
+  margin: 0 0 var(--space-4);
+  text-wrap: balance;
+}
+
+.enquiry-form {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: clamp(var(--space-6), 3vw, var(--space-8));
+}
+
 .enquiry-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: var(--space-8);
+  gap: clamp(var(--space-8), 4vw, var(--space-12));
+  align-items: start;
   max-width: var(--container-width);
   margin-inline: auto;
   padding-inline: var(--space-6);

@@ -1,5 +1,6 @@
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { siteConfig } from "../site.config";
+import { isBackendConfigured, submitInquiryToBackend, type InquiryValues } from "../lib/convex";
 import { EnquiryForm } from "./EnquiryForm";
 
 // Shared across both the cinematic and plain site variants (see
@@ -8,6 +9,19 @@ import { EnquiryForm } from "./EnquiryForm";
 export function EnquirySection() {
   const { enquirySection, businessName, contact } = siteConfig;
   const sectionRef = useRef<HTMLDivElement>(null);
+
+  // Sends the enquiry to the shared multi-tenant Convex backend. Without
+  // configured env vars, or if the mutation fails, the form reports
+  // enquirySection.disconnectedMessage instead of a fabricated success.
+  const handleSubmit = useCallback(async (values: InquiryValues) => {
+    if (!isBackendConfigured) throw new Error(enquirySection.disconnectedMessage);
+    try {
+      await submitInquiryToBackend(values);
+    } catch (error) {
+      console.error("Enquiry submission failed", error);
+      throw new Error(enquirySection.disconnectedMessage);
+    }
+  }, [enquirySection.disconnectedMessage]);
 
   useEffect(() => {
     const element = sectionRef.current;
@@ -34,7 +48,7 @@ export function EnquirySection() {
           {contact.hours && <p className="muted">{contact.hours}</p>}
         </div>
         <div className="enquiry-form">
-          <EnquiryForm />
+          <EnquiryForm onSubmit={handleSubmit} />
         </div>
       </div>
       <footer className="site-footer">
